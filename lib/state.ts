@@ -67,7 +67,7 @@ export const useSettings = create<{
 }>((set, get) => ({
   systemPrompt: HARDCODED_SYSTEM_PROMPT,
   model: DEFAULT_LIVE_API_MODEL,
-  voice: 'Aoede',
+  voice: 'Orus',
   language1: 'Auto-detected',
   language2: 'Dutch (Flemish)',
   topic: '',

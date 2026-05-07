@@ -24,7 +24,7 @@
 export const DEFAULT_LIVE_API_MODEL =
   'gemini-2.5-flash-native-audio-preview-09-2025';
 
-export const DEFAULT_VOICE = 'Charon';
+export const DEFAULT_VOICE = 'Orus';
 
 export const AVAILABLE_VOICES: { name: string; value: string }[] = [
   { name: 'Gold', value: 'Zephyr' },
