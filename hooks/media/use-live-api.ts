@@ -50,22 +50,12 @@ export function useLiveApi({
   const client = useMemo(() => new GenAILiveClient(apiKey, model), [apiKey, model]);
 
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
-  const pendingAudioChunks = useRef<Uint8Array[]>([]);
 
   const [volume, setVolume] = useState(0);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [connected, setConnected] = useState(false);
   const [config, setConfig] = useState<LiveConnectConfig>({});
   const [isTtsMuted, setIsTtsMuted] = useState(false);
-
-  const flushPendingAudio = useCallback(() => {
-    if (!audioStreamerRef.current || pendingAudioChunks.current.length === 0) return;
-    pendingAudioChunks.current.forEach(chunk => {
-      setIsAiSpeaking(true);
-      audioStreamerRef.current!.addPCM16(chunk);
-    });
-    pendingAudioChunks.current = [];
-  }, []);
 
   const toggleTtsMute = useCallback(() => {
     setIsTtsMuted(prev => {
@@ -113,15 +103,7 @@ export function useLiveApi({
 
     const onAudio = (data: ArrayBuffer) => {
       const chunk = new Uint8Array(data);
-      const userSpeaking = useSettings.getState().isUserSpeaking;
-      if (userSpeaking || !audioStreamerRef.current) {
-        pendingAudioChunks.current.push(chunk);
-        return;
-      }
-
-      if (pendingAudioChunks.current.length) {
-        flushPendingAudio();
-      }
+      if (!audioStreamerRef.current) return;
 
       setIsAiSpeaking(true);
       audioStreamerRef.current!.addPCM16(chunk);
@@ -148,16 +130,7 @@ export function useLiveApi({
       client.off('turncomplete', onTurnComplete);
       client.off('audio', onAudio);
     };
-  }, [client, flushPendingAudio]);
-
-  useEffect(() => {
-    const unsubscribe = useSettings.subscribe(state => {
-      if (!state.isUserSpeaking) {
-        flushPendingAudio();
-      }
-    });
-    return unsubscribe;
-  }, [flushPendingAudio]);
+  }, [client]);
 
   const connect = useCallback(async () => {
     if (!config) {
